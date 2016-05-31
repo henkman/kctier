@@ -1,0 +1,20 @@
+{
+	"manifest_version" : 2,
+
+	"name" : "kctier",
+	"description" : "",
+	"version" : "1.0",
+
+	"browser_action" : {
+		"default_icon" : "icon.png"
+	},
+	"permissions" : [
+		"*://*.krautchan.net/*"
+	],
+	"content_scripts" : [
+		{
+			"matches" : ["*://*.krautchan.net/*"],
+			"js" : ["kctier.min.js"]
+		}
+	]
+}
