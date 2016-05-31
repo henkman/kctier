@@ -41,7 +41,7 @@ class OverlayHandler {
 			video.appendChild(source);
 			this.overlay.appendChild(video);
 			video.load();
-			video.volume = 0;
+			video.muted = true;
 			video.onloadeddata = () => {
 				this.overlay.removeChild(this.loadicon);
 				if (video.videoWidth <= document.body.scrollWidth &&
