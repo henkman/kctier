@@ -43,27 +43,29 @@ class OverlayHandler {
 		this.overlay.appendChild(this.loadicon);
 		const href = this.media[this.current].href;
 		if (href.indexOf(".webm") > 0) {
-			const video = <HTMLVideoElement>document.createElement("video");
-			video.width = video.height = 0;
-			video.controls = true;
-			video.loop = true;
+			const vid = <HTMLVideoElement>document.createElement("video");
+			vid.style.zIndex = "10";
+			vid.style.width = vid.style.height = "0";
+			vid.controls = true;
+			vid.loop = true;
 			const source = <HTMLSourceElement>document.createElement("source");
 			source.type = "video/webm";
 			source.src = href;
-			video.appendChild(source);
-			this.overlay.appendChild(video);
-			video.load();
-			video.muted = true;
-			video.onloadeddata = () => {
+			vid.appendChild(source);
+			this.overlay.appendChild(vid);
+			vid.load();
+			vid.muted = true;
+			vid.onloadeddata = () => {
 				if (!this.overlay) {
 					return;
 				}
 				this.overlay.removeChild(this.loadicon);
-				this.resizeVideo(video);
-				video.play();
+				this.resizeElement(vid, vid.videoWidth, vid.videoHeight);
+				vid.play();
 			};
 		} else {
 			const img = <HTMLImageElement>document.createElement("img");
+			img.style.zIndex = "5";
 			img.style.width = img.style.height = "0";
 			this.overlay.appendChild(img);
 			img.onload = () => {
@@ -71,74 +73,87 @@ class OverlayHandler {
 					return;
 				}
 				this.overlay.removeChild(this.loadicon);
-				this.resizeImage(img);
+				this.resizeElement(img, img.naturalWidth, img.naturalHeight);
 			};
 			img.src = href;
 		}
 		this.updateArrows();
 	}
+	private overlayMouseMove = (e: MouseEvent) => {
+		if (!this.overlay) {
+			return;
+		}
+		const sb = 20;
+		const cw = window.innerWidth - sb;
+		const p = 0.15;
+		const rp = e.x / cw;
+		const opi = "0.6";
+		if (rp <= p) {
+			const arrow = <HTMLDivElement>
+				this.overlay.querySelector(".arrow_left");
+			if (arrow) {
+				arrow.style.opacity = opi;
+			}
+		} else if (rp >= (1 - p)) {
+			const arrow = <HTMLDivElement>
+				this.overlay.querySelector(".arrow_right");
+			if (arrow) {
+				arrow.style.opacity = opi;
+			}
+		} else {
+			const arrows = this.overlay.querySelectorAll(
+				".arrow_left, .arrow_right");
+			for (let i = 0; i < arrows.length; i++) {
+				(<HTMLDivElement>arrows[i]).style.opacity = "0";
+			}
+		}
+	}
 	private updateArrows = () => {
-		const makeArea = (): HTMLDivElement => {
-			const area = <HTMLDivElement>document.createElement("div");
-			area.style.minWidth = "15%";
-			area.style.position = "absolute";
-			area.style.height = "100%";
-			area.style.zIndex = "2";
-			area.style.display = "flex";
-			area.style.alignItems = "center";
-			const arrow = <HTMLDivElement>document.createElement("div");
-			arrow.style.borderStyle = "solid";
-			arrow.style.opacity = "0";
-			area.onmouseover = (e: MouseEvent) => {
-				arrow.style.opacity = "0.6";
-			};
-			area.onmouseleave = (e: MouseEvent) => {
-				arrow.style.opacity = "0";
-			};
-			area.appendChild(arrow);
-			return area;
-		};
 		{
-			const oldarea = this.overlay.querySelector(".arrow_left");
+			const oldarrow = this.overlay.querySelector(".arrow_left");
 			if (this.current > 0) {
-				if (!oldarea) {
-					const area = makeArea();
-					area.className = "arrow_left";
-					area.style.left = "0";
-					area.onclick = this.onLeftArrowClick;
-					const arrow = <HTMLDivElement>area.firstChild;
+				if (!oldarrow) {
+					const arrow = <HTMLDivElement>document.createElement("div");
+					arrow.style.position = "absolute";
+					arrow.style.zIndex = "15";
+					arrow.style.left = "10px";
+					arrow.className = "arrow_left";
+					arrow.style.opacity = "0";
+					arrow.onclick = this.onLeftArrowClick;
+					arrow.style.borderStyle = "solid";
 					arrow.style.borderColor =
 						"transparent #007bff transparent transparent";
 					arrow.style.borderWidth = "50px 100px 50px 0";
-					arrow.style.paddingLeft = "10px";
-					this.overlay.appendChild(area);
+					this.overlay.appendChild(arrow);
 				}
 			}
 			else {
-				if (oldarea) {
-					this.overlay.removeChild(oldarea);
+				if (oldarrow) {
+					this.overlay.removeChild(oldarrow);
 				}
 			}
 		}
 		{
-			const oldarea = this.overlay.querySelector(".arrow_right");
+			const oldarrow = this.overlay.querySelector(".arrow_right");
 			if (this.current < (this.media.length - 1)) {
-				if (!oldarea) {
-					const area = makeArea();
-					area.className = "arrow_right";
-					area.style.right = "0";
-					area.onclick = this.onRightArrowClick;
-					const arrow = <HTMLDivElement>area.firstChild;
+				if (!oldarrow) {
+					const arrow = <HTMLDivElement>document.createElement("div");
+					arrow.style.position = "absolute";
+					arrow.style.zIndex = "15";
+					arrow.style.right = "10px";
+					arrow.className = "arrow_right";
+					arrow.style.opacity = "0";
+					arrow.onclick = this.onRightArrowClick;
+					arrow.style.borderStyle = "solid";
 					arrow.style.borderColor =
 						"transparent transparent transparent #007bff";
 					arrow.style.borderWidth = "50px 0 50px 100px";
-					arrow.style.paddingRight = "10px";
-					this.overlay.appendChild(area);
+					this.overlay.appendChild(arrow);
 				}
 			}
 			else {
-				if (oldarea) {
-					this.overlay.removeChild(oldarea);
+				if (oldarrow) {
+					this.overlay.removeChild(oldarrow);
 				}
 			}
 		}
@@ -194,10 +209,10 @@ class OverlayHandler {
 		this.loadMedium();
 	}
 	private onExitClick = (e: MouseEvent) => {
-		e.stopPropagation();
 		if (!this.overlay) {
 			return;
 		}
+		e.stopPropagation();
 		const br = document.body.getBoundingClientRect();
 		let post = this.media[this.current].parentElement;
 		while (post && post.className != "postreply") {
@@ -228,7 +243,7 @@ class OverlayHandler {
 		this.overlay.style.height = "100%";
 		this.overlay.style.width = "100%";
 		this.overlay.style.position = "fixed";
-		this.overlay.style.zIndex = "1";
+		this.overlay.style.zIndex = "5";
 		this.overlay.style.left = "0";
 		this.overlay.style.top = "0";
 		this.overlay.style.backgroundColor = "rgb(0,0,0)";
@@ -238,69 +253,37 @@ class OverlayHandler {
 		this.overlay.style.justifyContent = "center";
 		this.overlay.style.alignItems = "center";
 		this.overlay.onclick = this.onExitClick;
+		this.overlay.onmousemove = this.overlayMouseMove;
 		document.body.appendChild(this.overlay);
 		this.loadMedium();
 	}
-	private resizeImage = (img: HTMLImageElement) => {
-		// INFO: YES, this is how to get the size of viewport-scrollbars
-		document.body.style.overflow = "hidden";
-		const cw = window.innerWidth;
+	private resizeElement = (el: HTMLElement, w: number, h: number) => {
+		const sb = 20;
+		const cw = window.innerWidth - sb;
 		const ch = window.innerHeight;
-		document.body.style.overflow = "";
-		const iw = img.naturalWidth;
-		const ih = img.naturalHeight;
-		if (iw <= cw && ih <= ch) {
-			img.style.width = img.style.height = "auto";
+		if (w <= cw && h <= ch) {
+			el.style.width = el.style.height = "auto";
 			return;
 		}
-		const nofitw = iw > cw;
-		if (nofitw && ih > ch) {
-			if (iw > ih) {
-				img.style.width = "auto";
-				img.style.height = ch + "px";
+		const nofitw = w > cw;
+		if (nofitw && h > ch) {
+			if (w > h) {
+				el.style.width = "auto";
+				el.style.height = ch + "px";
 			}
 			else {
-				img.style.width = cw + "px";
-				img.style.height = "auto";
+				el.style.width = cw + "px";
+				el.style.height = "auto";
 			}
 		}
 		else {
 			if (nofitw) {
-				img.style.width = cw + "px";
-				img.style.height = "auto";
+				el.style.width = cw + "px";
+				el.style.height = "auto";
 			}
 			else {
-				img.style.width = "auto";
-				img.style.height = ch + "px";
-			}
-		}
-	};
-	private resizeVideo = (video: HTMLVideoElement) => {
-		// INFO: YES, this is how to get the size of viewport-scrollbars
-		document.body.style.overflow = "hidden";
-		const cw = window.innerWidth;
-		const ch = window.innerHeight;
-		document.body.style.overflow = "";
-		const vw = video.videoWidth;
-		const vh = video.videoHeight;
-		if (vw <= cw && vh <= ch) {
-			return;
-		}
-		const nofitw = vw > cw;
-		if (nofitw && vh > ch) {
-			if (vw > vh) {
-				video.height = ch;
-			}
-			else {
-				video.width = cw;
-			}
-		}
-		else {
-			if (nofitw) {
-				video.width = cw;
-			}
-			else {
-				video.height = ch;
+				el.style.width = "auto";
+				el.style.height = ch + "px";
 			}
 		}
 	};
@@ -310,12 +293,12 @@ class OverlayHandler {
 		}
 		const href = this.media[this.current].href;
 		if (href.indexOf(".webm") > 0) {
-			const video = <HTMLVideoElement>this.overlay.querySelector("video");
-			this.resizeVideo(video);
+			const vid = <HTMLVideoElement>this.overlay.querySelector("video");
+			this.resizeElement(vid, vid.videoWidth, vid.videoHeight);
 		}
 		else {
 			const img = <HTMLImageElement>this.overlay.querySelector("img");
-			this.resizeImage(img);
+			this.resizeElement(img, img.naturalWidth, img.naturalHeight);
 		}
 	}
 }
