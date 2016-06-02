@@ -16,6 +16,198 @@ chrome.storage.local.get(<Options>{
 		HoverOverlayEnabled: true,
 	},
 }, function (opts: Options) {
+
+	if (opts.References.Enabled) {
+		class ReferencesHandler {
+			private opts: ReferencesOptions;
+			private overlay: HTMLDivElement;
+			private reId: RegExp;
+			constructor(opts: ReferencesOptions) {
+				this.opts = opts;
+				this.reId = new RegExp("#(\\d+)$");
+				const refs = <NodeListOf<HTMLAnchorElement>>
+					document.querySelectorAll('blockquote a');
+				for (let i = 0; i < refs.length; i++) {
+					const m = this.reId.exec(refs[i].href);
+					if (!m) {
+						continue;
+					}
+					if (this.opts.HoverOverlayEnabled) {
+						refs[i].onmouseenter = this.onRefMouseEnter;
+						refs[i].onmouseleave = this.onRefMouseLeave;
+					}
+					if (this.opts.ReferenceLinksEnabled) {
+						const ref_id = m[1];
+						let post_id:string;
+						{
+							let post = refs[i].parentElement;
+							while (post && post.className != "postreply") {
+								post = post.parentElement;
+							}
+							if(!post) {
+								continue;
+							}
+							const ql = <HTMLAnchorElement>
+							post.querySelector(".quotelink");
+							if(!ql) {
+								continue;
+							}
+							const m = this.reId.exec(ql.href);
+							if (!m) {
+								continue;
+							}
+							post_id = m[1];
+						}
+						{
+							const reply = <HTMLTableCellElement>
+								document.querySelector("#post-" + ref_id);
+							if(reply) {
+								const header = <HTMLDivElement>
+									reply.querySelector(".postheader");
+								if(!header) {
+									continue;
+								}
+								const a = <HTMLAnchorElement> 
+									document.createElement("a");
+								a.style.paddingRight = "4px";
+								a.href = "#"+post_id;
+								a.setAttribute("onclick",
+									"highlightPost('"+post_id+"')");
+								a.text = ">>"+post_id;
+								if (this.opts.HoverOverlayEnabled) {
+									a.onmouseenter = this.onRefMouseEnter;
+									a.onmouseleave = this.onRefMouseLeave;
+								}
+								header.appendChild(a);
+								continue;
+							} 
+						}
+						{
+							const thread = <HTMLDivElement>
+								document.querySelector("#thread_" + ref_id);
+							if(thread) {
+								const header = <HTMLDivElement>
+									thread.querySelector(".postheader");
+								if(!header) {
+									continue;
+								}
+								const a = <HTMLAnchorElement> 
+									document.createElement("a");
+								a.style.paddingRight = "4px";
+								a.href = "#"+post_id;
+								a.setAttribute("onclick",
+									"highlightPost('"+post_id+"')");
+								a.text = ">>"+post_id;
+								if (this.opts.HoverOverlayEnabled) {
+									a.onmouseenter = this.onRefMouseEnter;
+									a.onmouseleave = this.onRefMouseLeave;
+								}
+								header.appendChild(a);
+							}
+						}
+					}
+				}
+			}
+			private onRefMouseEnter = (e: MouseEvent) => {
+				if (this.overlay) {
+					return;
+				}
+				const ref = <HTMLAnchorElement>e.target;
+				const m = this.reId.exec(ref.href);
+				if (!m) {
+					return;
+				}
+				const offset = 10;
+				const id = m[1];
+				{
+					const reply = <HTMLTableCellElement>
+						document.querySelector("#post-" + id);
+					if (reply) {
+						const br = document.body.getBoundingClientRect();
+						const eref = ref.getBoundingClientRect();
+						const erep = reply.getBoundingClientRect();
+						const ey = eref.top - br.top;
+						const ex = eref.left - br.left;
+						const hy = document.body.scrollTop + window.innerHeight / 2;
+						const hx = window.innerWidth / 2;
+						let y: number;
+						if (ey > hy) {
+							y = ey - erep.height;
+						} else {
+							y = ey + eref.height;
+						}
+						let x: number;
+						if (ex > hx) {
+							x = ex - erep.width - offset;
+						} else {
+							x = ex + eref.width + offset;
+						}
+						// TODO: if in view only highlight like the cool kids do
+						this.overlay = <HTMLDivElement>document.createElement("div");
+						this.overlay.style.background = "#aaaacc";
+						this.overlay.style.border = "1px rgb(89,89,89) solid"
+						this.overlay.style.boxShadow =
+							"2px 2px 0px 0px rgb(128,128,128)";
+						this.overlay.style.position = "absolute";
+						this.overlay.appendChild(reply.cloneNode(true));
+						this.overlay.style.top = y + "px";
+						this.overlay.style.left = x + "px";
+						document.body.appendChild(this.overlay);
+						return;
+					}
+				}
+				{
+					const thread = <HTMLDivElement>
+						document.querySelector("#thread_" + id);
+					if (thread) {
+						const br = document.body.getBoundingClientRect();
+						const eref = ref.getBoundingClientRect();
+						const ey = eref.top - br.top;
+						const ex = eref.left - br.left + eref.width;
+						// TODO: if in view only highlight like the cool kids do
+						this.overlay = <HTMLDivElement>document.createElement("div");
+						const phs = thread.querySelectorAll(".postheader");
+						if (phs.length == 0) {
+							return;
+						}
+						this.overlay.appendChild(phs[0].cloneNode(true));
+						const files = thread.querySelectorAll(".file_thread");
+						for (let i = 0; i < files.length; i++) {
+							this.overlay.appendChild(files[i].cloneNode(true));
+						}
+						this.overlay.appendChild(
+							thread.querySelector(".postbody").cloneNode(true));
+						this.overlay.style.background = "#aaaacc";
+						this.overlay.style.border = "1px rgb(89,89,89) solid"
+						this.overlay.style.boxShadow =
+							"2px 2px 0px 0px rgb(128,128,128)";
+						this.overlay.style.position = "absolute";
+						this.overlay.style.top = ey + "px";
+						this.overlay.style.left = (ex + offset) + "px";
+						document.body.appendChild(this.overlay);
+						const half = document.body.scrollTop + window.innerHeight / 2;
+						if (ey > half) {
+							const or = this.overlay.getBoundingClientRect();
+							this.overlay.style.top = (ey - or.height) + "px";
+						}
+					}
+				}
+			}
+			private onRefMouseLeave = (e: MouseEvent) => {
+				if (!this.overlay) {
+					return;
+				}
+				document.body.removeChild(this.overlay);
+				this.overlay = null;
+			}
+		}
+		// INFO: for now only *in* threads
+		//       doing it on the whole board requires loading other threads via ajax
+		if (location.href.indexOf("thread-") > 0) {
+			new ReferencesHandler(opts.References);
+		}
+	}
+	
 	if (opts.MediaOverlay.Enabled) {
 		class MediaOverlayHandler {
 			private opts: MediaOverlayOptions;
@@ -62,12 +254,12 @@ chrome.storage.local.get(<Options>{
 				this.overlay.appendChild(this.loadicon);
 				const href = this.media[this.current].href;
 				if (href.indexOf(".webm") > 0) {
-					const vid = <HTMLVideoElement> document.createElement("video");
+					const vid = <HTMLVideoElement>document.createElement("video");
 					vid.style.zIndex = "10";
 					vid.style.width = vid.style.height = "0";
 					vid.controls = true;
 					vid.loop = this.opts.WebmLoop;
-					const source = <HTMLSourceElement> document.createElement("source");
+					const source = <HTMLSourceElement>document.createElement("source");
 					source.type = "video/webm";
 					source.src = href;
 					vid.appendChild(source);
@@ -236,7 +428,6 @@ chrome.storage.local.get(<Options>{
 				if (this.opts.ScrollToAfterExit) {
 					const br = document.body.getBoundingClientRect();
 					let post = this.media[this.current].parentElement;
-					// TODO: check this for threads
 					while (post && post.className != "postreply") {
 						post = post.parentElement;
 					}
@@ -327,120 +518,5 @@ chrome.storage.local.get(<Options>{
 			}
 		}
 		new MediaOverlayHandler(opts.MediaOverlay);
-	}
-
-	if (opts.References.Enabled) {
-		class ReferencesHandler {
-			private opts: ReferencesOptions;
-			private overlay: HTMLDivElement;
-			private reId: RegExp;
-			constructor(opts: ReferencesOptions) {
-				this.opts = opts;
-				this.reId = new RegExp("#(\\d+)$");
-				const refs = <NodeListOf<HTMLAnchorElement>>
-					document.querySelectorAll('blockquote a');
-				if (this.opts.HoverOverlayEnabled) {
-					for (let i = 0; i < refs.length; i++) {
-						refs[i].onmouseenter = this.onRefMouseEnter;
-						refs[i].onmouseleave = this.onRefMouseLeave;
-					}
-				}
-				if (this.opts.ReferenceLinksEnabled) {
-					for (let i = 0; i < refs.length; i++) {
-						// TODO: implement "add links to posts that reference this post next to header"
-					}
-				}
-			}
-			private onRefMouseEnter = (e: MouseEvent) => {
-				if (this.overlay) {
-					return;
-				}
-				const ref = <HTMLAnchorElement>e.target;
-				const m = this.reId.exec(ref.href);
-				if (!m) {
-					return;
-				}
-				const offset = 10;
-				const id = m[1];
-				{
-					const reply = <HTMLTableCellElement>
-						document.querySelector("#post-" + id);
-					if (reply) {
-						const br = document.body.getBoundingClientRect();
-						const eref = ref.getBoundingClientRect();
-						const ey = eref.top - br.top;
-						const ex = eref.left - br.left + eref.width;
-						const half = document.body.scrollTop + window.innerHeight / 2;
-						let y: number;
-						if (ey > half) {
-							const erep = reply.getBoundingClientRect();
-							y = ey - erep.height;
-						} else {
-							y = ey;
-						}
-						// TODO: if in view only highlight like the cool kids do
-						this.overlay = <HTMLDivElement>document.createElement("div");
-						this.overlay.style.background = "#aaaacc";
-						this.overlay.style.border = "1px rgb(89,89,89) solid"
-						this.overlay.style.boxShadow =
-							"2px 2px 0px 0px rgb(128,128,128)";
-						this.overlay.style.position = "absolute";
-						this.overlay.appendChild(reply.cloneNode(true));
-						this.overlay.style.top = y + "px";
-						this.overlay.style.left = (ex + offset) + "px";
-						document.body.appendChild(this.overlay);
-						return;
-					}
-				}
-				{
-					const thread = <HTMLDivElement>
-						document.querySelector("#thread_" + id);
-					if (thread) {
-						const br = document.body.getBoundingClientRect();
-						const eref = ref.getBoundingClientRect();
-						const ey = eref.top - br.top;
-						const ex = eref.left - br.left + eref.width;
-						// TODO: if in view only highlight like the cool kids do
-						this.overlay = <HTMLDivElement>document.createElement("div");
-						const phs = thread.querySelectorAll(".postheader");
-						if (phs.length == 0) {
-							return;
-						}
-						this.overlay.appendChild(phs[0].cloneNode(true));
-						const files = thread.querySelectorAll(".file_thread");
-						for (let i = 0; i < files.length; i++) {
-							this.overlay.appendChild(files[i].cloneNode(true));
-						}
-						this.overlay.appendChild(
-							thread.querySelector(".postbody").cloneNode(true));
-						this.overlay.style.background = "#aaaacc";
-						this.overlay.style.border = "1px rgb(89,89,89) solid"
-						this.overlay.style.boxShadow =
-							"2px 2px 0px 0px rgb(128,128,128)";
-						this.overlay.style.position = "absolute";
-						this.overlay.style.top = ey + "px";
-						this.overlay.style.left = (ex + offset) + "px";
-						document.body.appendChild(this.overlay);
-						const half = document.body.scrollTop + window.innerHeight / 2;
-						if (ey > half) {
-							const or = this.overlay.getBoundingClientRect();
-							this.overlay.style.top = (ey - or.height) + "px";
-						}
-					}
-				}
-			}
-			private onRefMouseLeave = (e: MouseEvent) => {
-				if (!this.overlay) {
-					return;
-				}
-				document.body.removeChild(this.overlay);
-				this.overlay = null;
-			}
-		}
-		// INFO: for now only *in* threads
-		//       doing it on the whole board requires loading other threads via ajax
-		if (location.href.indexOf("thread-") > 0) {
-			new ReferencesHandler(opts.References);
-		}
 	}
 });
