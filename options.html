@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head><title>Options</title></head>
+<style>
+label {
+	display: block;
+	padding: 2px;
+}
+section {
+	padding:5px;
+	margin: 2px;
+	border: solid 2px;
+}
+</style>
+<body>
+<section>
+	<h3>Media Overlay</h3>
+	<hr/>
+	<label>
+		<input type="checkbox" id="mediaoverlay_Enabled">
+		enabled
+	</label>
+	<label>
+		<input type="checkbox" id="mediaoverlay_WebmMuted">
+		mute webms
+	</label>
+	<label>
+		<input type="number" step="0.01" min="0" max="1" id="mediaoverlay_WebmVolume">
+		webm audio volume (1 = 100%, 0.5 = 50%)
+	</label>
+	<label>
+		<input type="checkbox" id="mediaoverlay_WebmLoop">
+		loop webms
+	</label>
+	<label>
+		<input type="checkbox" id="mediaoverlay_ScrollToAfterExit">
+		scroll to last viewed item after exiting overlay
+	</label>
+	<label>
+		<input type="text" id="mediaoverlay_AllowedExtensions">
+		allowed extensions
+	</label>
+</section>
+<section>
+	<h3>References</h3>
+	<hr/>
+	<label>
+		<input type="checkbox" id="references_Enabled">
+		enabled
+	</label>
+	<label>
+		<input type="checkbox" id="references_ReferenceLinksEnabled">
+		show references to a post in its header as links
+	</label>
+	<label>
+		<input type="checkbox" id="references_HoverOverlayEnabled">
+		show preview overlay of post when hovering a reference
+	</label>
+</section>
+<div id="status"></div>
+<button id="save">Save</button>
+<button id="restore">Restore</button>
+<script src="options.min.js"></script>
+</body>
+</html>

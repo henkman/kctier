@@ -1,14 +1,21 @@
 {
 	"manifest_version" : 2,
-
-	"name" : "kctier",
-	"description" : "",
+	"name" : "kc tier",
+	"description" : "it was kc tier and it was an extension",
+	"icons": {
+		"16": "icon16.png",
+		"64": "icon64.png"
+	},
 	"version" : "1.0",
-
+	"options_ui": {
+		"page": "options.html",
+		"chrome_style": true
+	},
 	"browser_action" : {
-		"default_icon" : "icon.png"
+		"default_icon" : "icon16.png"
 	},
 	"permissions" : [
+		"storage",
 		"*://*.krautchan.net/*"
 	],
 	"content_scripts" : [

@@ -1,27 +1,7 @@
+/// <reference path="chrome.d.ts"/>
+/// <reference path="common.ts"/>
 
-interface MediaOverlayOptions {
-	Enabled: boolean
-	WebmMuted: boolean
-	WebmVolume: number
-	WebmLoop: boolean
-	ScrollToAfterExit: boolean
-	AllowedExtensions: Array<string>
-}
-
-interface ReferencesOptions {
-	Enabled: boolean
-	ReferenceLinksEnabled: boolean
-	HoverOverlayEnabled: boolean
-}
-
-interface Options {
-	MediaOverlay: MediaOverlayOptions
-	References: ReferencesOptions
-}
-
-// TODO: load from storage
-//       build options.html
-const opts: Options = {
+chrome.storage.local.get(<Options>{
 	MediaOverlay: {
 		Enabled: true,
 		WebmMuted: true,
@@ -35,432 +15,432 @@ const opts: Options = {
 		ReferenceLinksEnabled: true,
 		HoverOverlayEnabled: true,
 	},
-};
-
-if (opts.MediaOverlay.Enabled) {
-	class MediaOverlayHandler {
-		private opts: MediaOverlayOptions;
-		private overlay: HTMLDivElement;
-		private media: Array<HTMLAnchorElement>;
-		private current: number;
-		private loadicon: HTMLImageElement;
-		constructor(opts: MediaOverlayOptions) {
-			this.opts = opts;
-			const media: NodeListOf<HTMLAnchorElement> =
-				<NodeListOf<HTMLAnchorElement>>document.querySelectorAll(
-					'.file_thread a[target="_blank"], .file_reply a[target="_blank"]'
-				);
-			this.media = new Array<HTMLAnchorElement>(media.length);
-			let o = 0;
-			for (let i = 0; i < media.length; i++) {
-				const href = media[i].href;
-				if (!href) {
-					continue;
-				}
-				const d = href.lastIndexOf(".");
-				if (d < 0) {
-					continue;
-				}
-				const ext = href.slice(d + 1).toLowerCase();
-				if (this.opts.AllowedExtensions.indexOf(ext) < 0) {
-					continue;
-				}
-				media[o].onclick = this.onMediumClick;
-				this.media[o] = media[i];
-				o++;
-			}
-			this.media.slice(0, o);
-			window.onresize = this.onResize;
-			window.onkeyup = this.onKeyup;
-			this.loadicon = document.createElement("img");
-			this.loadicon.src = "data:image/gif;base64,R0lGODlhGAAYAPcAAAUFBQYGBgcHBwgIBwgICAkJCAoKCQsLCgwMCgwMCw0NCw4ODBAQDhQUERcXExgYFB4eGSYmICgoIS0tJTExKDMzKTk5Ljs7MD4+Mj8/M0dHOUpJO0tLPExMPU1NPlNTQ1hZSFlaSGFhTmVkUGlpVHl5YIKCaIODaYSEaYSEa4iIbYmJbYqKb4yMcI2NcZKRdJKSdJOSdZOTdpSUdpiYeZmZeqemhaeoh6mohquriK2sirS0j7KzkLa2kr/AmsvMpNDPptXVqtfWq9nYrd/fsuDfsuLitOblt+nouOrquvHxwPr6x/v7x///y8zMzAsLCRESDxISDxMTEBYWEhYWExkZFRoaFR0dGCEhGycnICkpISoqIisrIzAwJzU1KzY2LDY3LTo7MEJCNUNDNkpLPVJSQlJTQ1hYR2NjUGZmUnZ2X3h4YHt7Y4eHbIyNcpmYeZ2ef5+ffqOjgqSjg62tirCwjLOyj7Ozj7e2kru7lcHCnMTEnsTFn8bHoMjJosrKocvLocrLo9PSqOPjteTjteXltufnuOjoufDwv/T0wvX1w/b2xAcHBh8fGjo6Lzw8MEpKPEtMPUxMPmpqVXp6YIWFa5GRc5SUd6alhKioh6qph6yribGyj72+mcnKotfXq9jXrNrZreHhs+npufLywPPzwRUVEhoaFhwcFyopIjQ0Kjc3LUFBNFlZSIiHbZaWeJqZeq6ui7Gxjba1kby8ltHQpuPitEtLPainhrW1kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh/iRNYWRlIGJ5IEtWU3lzdGVtcyAod3d3LmxvYWRpbmZvLm5ldCkAIfkEAQoATgAsAAAAABgAGAAAB7SAAIKDgwIaMDAaAoSMjYMiSU1NSSKOjgEBABBBkpJBEJaDARkuMRsYSp1NShahghlAR0hCJUSqRhKuAC1HvUg4LEuSTCiZri9IvjkPJDs7JAy6AB1DSEhFI4IFBdKCAx82OiMK3YQRHhQLB+WEFjw/PiDsoik/9jcN8wAB9ff5+u7ghdA36FwFAgQZNXBgjOCFGTU4JESgokcPGg4IGjBhUcY/fRNOrLiQUNCBBCVTqlw5KBAAIfkEAQoAAQAsAAAAABgAGAAACMUAAQgcSFABBQoKCCpcSLDKC0GCXlRhSHGgmiNIkBxRA2ABlywHKC4AcyFKgTkaMcrxUudQoThYFipgs6ePmyltMGp8k6eJzyZxDCj8oufHDz9ktOAhRMhOGkQ/mwzKojAMH6OBzACAUKaMFTGKohraohCKm0A/4FxRWOVP1DoJFVLxYGbtQjGAFiXK00XhAClCKwKwMgZDA4UK0NBYM1EwxS90etw54/hx5MmVGSZe3DizXylPPIseTbq06dOoU6tezRpAQAAh+QQBCgAEACwAAAAAGAAYAAAIywABCBxIEAAjRgUTKhxooVIlCwsjCozA6ccPThEEBggg8UACgZI8WfQUCUCHGC4ycEw44cSKRwAqdLLYicKHUEiOAMmQ0ICJHj1kSGEUIlOmEAsw5TxypEVCBCqA0nAAIECDBgES5FiK5IXCR5dqcFA4oggSJKAgLWzgYGVBBSM2aaKEAYJbiQUdsBBF6pMIAXgTkljSpPAoDYEJFrhTuLGlxAMXNy78GLLASYQNI7YMgAGKQaX8AuYMYIAER43ukl7NurXr17Bjyw4IACH5BAEKAAIALAAAAAAYABgAAAjDAAEIHEiwoMGDBhWsWqUAoUOBAdDEioUmwEOEUl716PFKCoAoF8AsuCjQwJo7d9YQMOWmzx42DUmeatXqFAAPfn780POFpEEzgXTyCeOz4BU4PwK5gVLUqJlIpgY0NZjKFSY1NqcCuDLrCJIjLxJoLWPrK5JaFMaW9YpWKyo7XsGKbWqFVRpYc7BOFQNoESlaqrRW+dOkcJM6MYuKUWS4iaEtUzGUajwoy9QGeRrHMaC1i6xDheJg0SpwAZcsB0irbhoQACH5BAEKABcALAAAAAAYABgAAAjBAAEIHEiwoMGDCBMqXMhwYYIDDRE+WnFiQsSCDWT06GHCwMWBDmhsVIHg48BbNS49MjkwgIMGLAsSqOAhQkwAIXz84GGBZYMbP4KmCGDyZ9AfQ1nm3NnTZIIFFGqaVDBCB64PAyIWKCBwRBEkSIZ0YMhgUq5cJB7kQHLkCJIXCwOgYNKkyRIWONi2bbFQgpG6dYlQEsIWSIaFFpQAbqIkw4YYLjIQVQghyOIgEAAEmMxQRJK6SUSwFKABBgwNAhIGBAAh+QQBCgABACwAAAAAGAAYAAAIwAABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsSLBJ1IGUKyyhgYaBRPP3OlB50vIkSUncvQIkmADDGOsLMSokWCXPIkWARJz8IoZD1QMKqjTpGiTP1UKXoHzI5AbKAW3GDLaRJEYK2XKQABgJtCPH3zCFMwyiCqiNHYIEcKjJZKfr3pMEjQQh2qeN0eQIDnSZoqbPnvYtCSIJU6hQ3W8yNmbd06BKBfALEB4IAuXyWry7lUjscoLQYJeJJWogAKFwQcDAgAh+QQBCgAEACwAAAAAGAAYAAAIxQABCBxIsKDBgwgTKlzIsKHDhxAjSpw4MEAjRxIGSBQg4lOpQSgYRNQwqonJJZMiWjLJ8k4BiCtZNnEJkSTLJSQicvxEShQLBxIDQMBASdOmEQoOBnDQACEkUEiQFBlx8FaNGRcOvkBy5AiSHAkCNGgQAIADGj16qEBgsEVXr5gWhMiUKQQjKTLSmjBgMAMQr6E+UOj040enCgAerTgxQWkGFzE6AIjkqbAnSQITHFAYoCyACJwKc4ow0UKlShYoAmDEaGFAACH5BAEKAAIALAAAAAAYABgAAAjDAAEIHEiwoMGDCBMePJCFywKFCbHEKXRIVheIBg3EacKxSZ4GGAlmGdSxSSkMIQduMVRSkZiUAhXUKfmnCkyBqmiRWgToJcxTaubASsPKys0EL44gOWIH1U0AFGotRWKrzNOoU6s+Rar0yKwrTwEAxeQqVdiBA0xFMgM2LBQ3gX7AaXszDJ8fPwKZCftFD14/HsS2anUqpAI2e/q4MUVgzZ07awyEXADmQhQAUl716PFKStgAaGLFQhPgrIJVqxSchRkQADs=";
-		}
-		private loadMedium = () => {
-			const medium = this.overlay.querySelector("img, video");
-			if (medium) {
-				this.overlay.removeChild(medium);
-			}
-			this.overlay.appendChild(this.loadicon);
-			const href = this.media[this.current].href;
-			if (href.indexOf(".webm") > 0) {
-				const vid = <HTMLVideoElement>document.createElement("video");
-				vid.style.zIndex = "10";
-				vid.style.width = vid.style.height = "0";
-				vid.controls = true;
-				vid.loop = this.opts.WebmLoop;
-				const source = <HTMLSourceElement>document.createElement("source");
-				source.type = "video/webm";
-				source.src = href;
-				vid.appendChild(source);
-				this.overlay.appendChild(vid);
-				vid.load();
-				vid.muted = this.opts.WebmMuted;
-				vid.volume = this.opts.WebmVolume;
-				vid.onloadeddata = () => {
-					if (!this.overlay) {
-						return;
+}, function (opts: Options) {
+	if (opts.MediaOverlay.Enabled) {
+		class MediaOverlayHandler {
+			private opts: MediaOverlayOptions;
+			private overlay: HTMLDivElement;
+			private media: Array<HTMLAnchorElement>;
+			private current: number;
+			private loadicon: HTMLImageElement;
+			constructor(opts: MediaOverlayOptions) {
+				this.opts = opts;
+				const media: NodeListOf<HTMLAnchorElement> =
+					<NodeListOf<HTMLAnchorElement>>document.querySelectorAll(
+						'.file_thread a[target="_blank"], .file_reply a[target="_blank"]'
+					);
+				this.media = new Array<HTMLAnchorElement>(media.length);
+				let o = 0;
+				for (let i = 0; i < media.length; i++) {
+					const href = media[i].href;
+					if (!href) {
+						continue;
 					}
-					this.overlay.removeChild(this.loadicon);
-					this.resizeElement(vid, vid.videoWidth, vid.videoHeight);
-					vid.play();
-				};
-			} else {
-				const img = <HTMLImageElement>document.createElement("img");
-				img.style.zIndex = "5";
-				img.style.width = img.style.height = "0";
-				this.overlay.appendChild(img);
-				img.onload = () => {
-					if (!this.overlay) {
-						return;
+					const d = href.lastIndexOf(".");
+					if (d < 0) {
+						continue;
 					}
-					this.overlay.removeChild(this.loadicon);
-					this.resizeElement(img, img.naturalWidth, img.naturalHeight);
-				};
-				img.src = href;
-			}
-			this.updateArrows();
-		}
-		private overlayMouseMove = (e: MouseEvent) => {
-			if (!this.overlay) {
-				return;
-			}
-			// TODO: replace this magic
-			const sb = 20;
-			const p = 0.15;
-			const rp = e.x / (window.innerWidth - sb);
-			const opi = "0.6";
-			if (rp <= p) {
-				const arrow = <HTMLDivElement>
-					this.overlay.querySelector(".arrow_left");
-				if (arrow) {
-					arrow.style.opacity = opi;
-				}
-			} else if (rp >= (1 - p)) {
-				const arrow = <HTMLDivElement>
-					this.overlay.querySelector(".arrow_right");
-				if (arrow) {
-					arrow.style.opacity = opi;
-				}
-			} else {
-				const arrows = this.overlay.querySelectorAll(
-					".arrow_left, .arrow_right");
-				for (let i = 0; i < arrows.length; i++) {
-					(<HTMLDivElement>arrows[i]).style.opacity = "0";
-				}
-			}
-		}
-		private updateArrows = () => {
-			{
-				const oldarrow = this.overlay.querySelector(".arrow_left");
-				if (this.current > 0) {
-					if (!oldarrow) {
-						const arrow = <HTMLDivElement>document.createElement("div");
-						arrow.style.position = "absolute";
-						arrow.style.zIndex = "15";
-						arrow.style.left = "10px";
-						arrow.className = "arrow_left";
-						arrow.style.opacity = "0";
-						arrow.onclick = this.onLeftArrowClick;
-						arrow.style.borderStyle = "solid";
-						arrow.style.borderColor =
-							"transparent #007bff transparent transparent";
-						arrow.style.borderWidth = "50px 100px 50px 0";
-						this.overlay.appendChild(arrow);
+					const ext = href.slice(d + 1).toLowerCase();
+					if (this.opts.AllowedExtensions.indexOf(ext) < 0) {
+						continue;
 					}
+					media[o].onclick = this.onMediumClick;
+					this.media[o] = media[i];
+					o++;
 				}
-				else {
-					if (oldarrow) {
-						this.overlay.removeChild(oldarrow);
-					}
-				}
+				this.media.slice(0, o);
+				window.onresize = this.onResize;
+				window.onkeyup = this.onKeyup;
+				this.loadicon = document.createElement("img");
+				this.loadicon.src = "data:image/gif;base64,R0lGODlhGAAYAPcAAAUFBQYGBgcHBwgIBwgICAkJCAoKCQsLCgwMCgwMCw0NCw4ODBAQDhQUERcXExgYFB4eGSYmICgoIS0tJTExKDMzKTk5Ljs7MD4+Mj8/M0dHOUpJO0tLPExMPU1NPlNTQ1hZSFlaSGFhTmVkUGlpVHl5YIKCaIODaYSEaYSEa4iIbYmJbYqKb4yMcI2NcZKRdJKSdJOSdZOTdpSUdpiYeZmZeqemhaeoh6mohquriK2sirS0j7KzkLa2kr/AmsvMpNDPptXVqtfWq9nYrd/fsuDfsuLitOblt+nouOrquvHxwPr6x/v7x///y8zMzAsLCRESDxISDxMTEBYWEhYWExkZFRoaFR0dGCEhGycnICkpISoqIisrIzAwJzU1KzY2LDY3LTo7MEJCNUNDNkpLPVJSQlJTQ1hYR2NjUGZmUnZ2X3h4YHt7Y4eHbIyNcpmYeZ2ef5+ffqOjgqSjg62tirCwjLOyj7Ozj7e2kru7lcHCnMTEnsTFn8bHoMjJosrKocvLocrLo9PSqOPjteTjteXltufnuOjoufDwv/T0wvX1w/b2xAcHBh8fGjo6Lzw8MEpKPEtMPUxMPmpqVXp6YIWFa5GRc5SUd6alhKioh6qph6yribGyj72+mcnKotfXq9jXrNrZreHhs+npufLywPPzwRUVEhoaFhwcFyopIjQ0Kjc3LUFBNFlZSIiHbZaWeJqZeq6ui7Gxjba1kby8ltHQpuPitEtLPainhrW1kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh/iRNYWRlIGJ5IEtWU3lzdGVtcyAod3d3LmxvYWRpbmZvLm5ldCkAIfkEAQoATgAsAAAAABgAGAAAB7SAAIKDgwIaMDAaAoSMjYMiSU1NSSKOjgEBABBBkpJBEJaDARkuMRsYSp1NShahghlAR0hCJUSqRhKuAC1HvUg4LEuSTCiZri9IvjkPJDs7JAy6AB1DSEhFI4IFBdKCAx82OiMK3YQRHhQLB+WEFjw/PiDsoik/9jcN8wAB9ff5+u7ghdA36FwFAgQZNXBgjOCFGTU4JESgokcPGg4IGjBhUcY/fRNOrLiQUNCBBCVTqlw5KBAAIfkEAQoAAQAsAAAAABgAGAAACMUAAQgcSFABBQoKCCpcSLDKC0GCXlRhSHGgmiNIkBxRA2ABlywHKC4AcyFKgTkaMcrxUudQoThYFipgs6ePmyltMGp8k6eJzyZxDCj8oufHDz9ktOAhRMhOGkQ/mwzKojAMH6OBzACAUKaMFTGKohraohCKm0A/4FxRWOVP1DoJFVLxYGbtQjGAFiXK00XhAClCKwKwMgZDA4UK0NBYM1EwxS90etw54/hx5MmVGSZe3DizXylPPIseTbq06dOoU6tezRpAQAAh+QQBCgAEACwAAAAAGAAYAAAIywABCBxIEAAjRgUTKhxooVIlCwsjCozA6ccPThEEBggg8UACgZI8WfQUCUCHGC4ycEw44cSKRwAqdLLYicKHUEiOAMmQ0ICJHj1kSGEUIlOmEAsw5TxypEVCBCqA0nAAIECDBgES5FiK5IXCR5dqcFA4oggSJKAgLWzgYGVBBSM2aaKEAYJbiQUdsBBF6pMIAXgTkljSpPAoDYEJFrhTuLGlxAMXNy78GLLASYQNI7YMgAGKQaX8AuYMYIAER43ukl7NurXr17Bjyw4IACH5BAEKAAIALAAAAAAYABgAAAjDAAEIHEiwoMGDBhWsWqUAoUOBAdDEioUmwEOEUl716PFKCoAoF8AsuCjQwJo7d9YQMOWmzx42DUmeatXqFAAPfn780POFpEEzgXTyCeOz4BU4PwK5gVLUqJlIpgY0NZjKFSY1NqcCuDLrCJIjLxJoLWPrK5JaFMaW9YpWKyo7XsGKbWqFVRpYc7BOFQNoESlaqrRW+dOkcJM6MYuKUWS4iaEtUzGUajwoy9QGeRrHMaC1i6xDheJg0SpwAZcsB0irbhoQACH5BAEKABcALAAAAAAYABgAAAjBAAEIHEiwoMGDCBMqXMhwYYIDDRE+WnFiQsSCDWT06GHCwMWBDmhsVIHg48BbNS49MjkwgIMGLAsSqOAhQkwAIXz84GGBZYMbP4KmCGDyZ9AfQ1nm3NnTZIIFFGqaVDBCB64PAyIWKCBwRBEkSIZ0YMhgUq5cJB7kQHLkCJIXCwOgYNKkyRIWONi2bbFQgpG6dYlQEsIWSIaFFpQAbqIkw4YYLjIQVQghyOIgEAAEmMxQRJK6SUSwFKABBgwNAhIGBAAh+QQBCgABACwAAAAAGAAYAAAIwAABCBxIsKDBgwgTKlzIsKHDhxAjSpxIsSLBJ1IGUKyyhgYaBRPP3OlB50vIkSUncvQIkmADDGOsLMSokWCXPIkWARJz8IoZD1QMKqjTpGiTP1UKXoHzI5AbKAW3GDLaRJEYK2XKQABgJtCPH3zCFMwyiCqiNHYIEcKjJZKfr3pMEjQQh2qeN0eQIDnSZoqbPnvYtCSIJU6hQ3W8yNmbd06BKBfALEB4IAuXyWry7lUjscoLQYJeJJWogAKFwQcDAgAh+QQBCgAEACwAAAAAGAAYAAAIxQABCBxIsKDBgwgTKlzIsKHDhxAjSpw4MEAjRxIGSBQg4lOpQSgYRNQwqonJJZMiWjLJ8k4BiCtZNnEJkSTLJSQicvxEShQLBxIDQMBASdOmEQoOBnDQACEkUEiQFBlx8FaNGRcOvkBy5AiSHAkCNGgQAIADGj16qEBgsEVXr5gWhMiUKQQjKTLSmjBgMAMQr6E+UOj040enCgAerTgxQWkGFzE6AIjkqbAnSQITHFAYoCyACJwKc4ow0UKlShYoAmDEaGFAACH5BAEKAAIALAAAAAAYABgAAAjDAAEIHEiwoMGDCBMePJCFywKFCbHEKXRIVheIBg3EacKxSZ4GGAlmGdSxSSkMIQduMVRSkZiUAhXUKfmnCkyBqmiRWgToJcxTaubASsPKys0EL44gOWIH1U0AFGotRWKrzNOoU6s+Rar0yKwrTwEAxeQqVdiBA0xFMgM2LBQ3gX7AaXszDJ8fPwKZCftFD14/HsS2anUqpAI2e/q4MUVgzZ07awyEXADmQhQAUl716PFKStgAaGLFQhPgrIJVqxSchRkQADs=";
 			}
-			{
-				const oldarrow = this.overlay.querySelector(".arrow_right");
-				if (this.current < (this.media.length - 1)) {
-					if (!oldarrow) {
-						const arrow = <HTMLDivElement>document.createElement("div");
-						arrow.style.position = "absolute";
-						arrow.style.zIndex = "15";
-						arrow.style.right = "10px";
-						arrow.className = "arrow_right";
-						arrow.style.opacity = "0";
-						arrow.onclick = this.onRightArrowClick;
-						arrow.style.borderStyle = "solid";
-						arrow.style.borderColor =
-							"transparent transparent transparent #007bff";
-						arrow.style.borderWidth = "50px 0 50px 100px";
-						this.overlay.appendChild(arrow);
-					}
+			private loadMedium = () => {
+				const medium = this.overlay.querySelector("img, video");
+				if (medium) {
+					this.overlay.removeChild(medium);
 				}
-				else {
-					if (oldarrow) {
-						this.overlay.removeChild(oldarrow);
-					}
+				this.overlay.appendChild(this.loadicon);
+				const href = this.media[this.current].href;
+				if (href.indexOf(".webm") > 0) {
+					const vid = <HTMLVideoElement> document.createElement("video");
+					vid.style.zIndex = "10";
+					vid.style.width = vid.style.height = "0";
+					vid.controls = true;
+					vid.loop = this.opts.WebmLoop;
+					const source = <HTMLSourceElement> document.createElement("source");
+					source.type = "video/webm";
+					source.src = href;
+					vid.appendChild(source);
+					this.overlay.appendChild(vid);
+					vid.load();
+					vid.muted = this.opts.WebmMuted;
+					vid.volume = this.opts.WebmVolume;
+					vid.onloadeddata = () => {
+						if (!this.overlay) {
+							return;
+						}
+						this.overlay.removeChild(this.loadicon);
+						this.resizeElement(vid, vid.videoWidth, vid.videoHeight);
+						vid.play();
+					};
+				} else {
+					const img = <HTMLImageElement>document.createElement("img");
+					img.style.zIndex = "5";
+					img.style.width = img.style.height = "0";
+					this.overlay.appendChild(img);
+					img.onload = () => {
+						if (!this.overlay) {
+							return;
+						}
+						this.overlay.removeChild(this.loadicon);
+						this.resizeElement(img, img.naturalWidth, img.naturalHeight);
+					};
+					img.src = href;
 				}
+				this.updateArrows();
 			}
-		};
-		private isLoading = (): boolean => {
-			return this.loadicon.parentNode != null;
-		}
-		private onKeyup = (e: KeyboardEvent) => {
-			const left = 37;
-			const right = 39;
-			if (this.current == null ||
-				(e.keyCode != left && e.keyCode != right) ||
-				this.isLoading()) {
-				return;
-			}
-			let ni: number;
-			if (e.keyCode == right) {
-				ni = this.current + 1;
-				if (ni >= this.media.length) {
+			private overlayMouseMove = (e: MouseEvent) => {
+				if (!this.overlay) {
 					return;
 				}
-			} else {
-				ni = this.current - 1;
+				// TODO: replace this magic
+				const sb = 20;
+				const p = 0.15;
+				const rp = e.x / (window.innerWidth - sb);
+				const opi = "0.6";
+				if (rp <= p) {
+					const arrow = <HTMLDivElement>
+						this.overlay.querySelector(".arrow_left");
+					if (arrow) {
+						arrow.style.opacity = opi;
+					}
+				} else if (rp >= (1 - p)) {
+					const arrow = <HTMLDivElement>
+						this.overlay.querySelector(".arrow_right");
+					if (arrow) {
+						arrow.style.opacity = opi;
+					}
+				} else {
+					const arrows = this.overlay.querySelectorAll(
+						".arrow_left, .arrow_right");
+					for (let i = 0; i < arrows.length; i++) {
+						(<HTMLDivElement>arrows[i]).style.opacity = "0";
+					}
+				}
+			}
+			private updateArrows = () => {
+				{
+					const oldarrow = this.overlay.querySelector(".arrow_left");
+					if (this.current > 0) {
+						if (!oldarrow) {
+							const arrow = <HTMLDivElement>document.createElement("div");
+							arrow.style.position = "absolute";
+							arrow.style.zIndex = "15";
+							arrow.style.left = "10px";
+							arrow.className = "arrow_left";
+							arrow.style.opacity = "0";
+							arrow.onclick = this.onLeftArrowClick;
+							arrow.style.borderStyle = "solid";
+							arrow.style.borderColor =
+								"transparent #007bff transparent transparent";
+							arrow.style.borderWidth = "50px 100px 50px 0";
+							this.overlay.appendChild(arrow);
+						}
+					}
+					else {
+						if (oldarrow) {
+							this.overlay.removeChild(oldarrow);
+						}
+					}
+				}
+				{
+					const oldarrow = this.overlay.querySelector(".arrow_right");
+					if (this.current < (this.media.length - 1)) {
+						if (!oldarrow) {
+							const arrow = <HTMLDivElement>document.createElement("div");
+							arrow.style.position = "absolute";
+							arrow.style.zIndex = "15";
+							arrow.style.right = "10px";
+							arrow.className = "arrow_right";
+							arrow.style.opacity = "0";
+							arrow.onclick = this.onRightArrowClick;
+							arrow.style.borderStyle = "solid";
+							arrow.style.borderColor =
+								"transparent transparent transparent #007bff";
+							arrow.style.borderWidth = "50px 0 50px 100px";
+							this.overlay.appendChild(arrow);
+						}
+					}
+					else {
+						if (oldarrow) {
+							this.overlay.removeChild(oldarrow);
+						}
+					}
+				}
+			};
+			private isLoading = (): boolean => {
+				return this.loadicon.parentNode != null;
+			}
+			private onKeyup = (e: KeyboardEvent) => {
+				const left = 37;
+				const right = 39;
+				if (this.current == null ||
+					(e.keyCode != left && e.keyCode != right) ||
+					this.isLoading()) {
+					return;
+				}
+				let ni: number;
+				if (e.keyCode == right) {
+					ni = this.current + 1;
+					if (ni >= this.media.length) {
+						return;
+					}
+				} else {
+					ni = this.current - 1;
+					if (ni < 0) {
+						return;
+					}
+				}
+				this.current = ni;
+				this.loadMedium();
+			}
+			private onLeftArrowClick = (e: MouseEvent) => {
+				e.stopPropagation();
+				if (!this.overlay || this.isLoading()) {
+					return;
+				}
+				const ni = this.current - 1;
 				if (ni < 0) {
 					return;
 				}
+				this.current = ni;
+				this.loadMedium();
 			}
-			this.current = ni;
-			this.loadMedium();
-		}
-		private onLeftArrowClick = (e: MouseEvent) => {
-			e.stopPropagation();
-			if (!this.overlay || this.isLoading()) {
-				return;
-			}
-			const ni = this.current - 1;
-			if (ni < 0) {
-				return;
-			}
-			this.current = ni;
-			this.loadMedium();
-		}
-		private onRightArrowClick = (e: MouseEvent) => {
-			e.stopPropagation();
-			if (!this.overlay || this.isLoading()) {
-				return;
-			}
-			const ni = this.current + 1;
-			if (ni >= this.media.length) {
-				return;
-			}
-			this.current = ni;
-			this.loadMedium();
-		}
-		private onExitClick = (e: MouseEvent) => {
-			if (!this.overlay) {
-				return;
-			}
-			e.stopPropagation();
-			if (this.opts.ScrollToAfterExit) {
-				const br = document.body.getBoundingClientRect();
-				let post = this.media[this.current].parentElement;
-				// TODO: check this for threads
-				while (post && post.className != "postreply") {
-					post = post.parentElement;
-				}
-				if (post) {
-					const er = post.getBoundingClientRect();
-					const py = er.top - br.top;
-					window.scrollTo(0, py);
-				}
-			}
-			document.body.removeChild(this.overlay);
-			this.current = -1;
-			this.overlay = null;
-		}
-		private onMediumClick = (e: MouseEvent) => {
-			e.preventDefault();
-			if (this.overlay) {
-				return;
-			}
-			const target = <HTMLDivElement>e.target;
-			const a = <HTMLAnchorElement>target.parentElement;
-			const index = this.media.indexOf(a);
-			if (index < 0) {
-				return;
-			}
-			this.current = index;
-			this.overlay = document.createElement("div");
-			this.overlay.style.height = "100%";
-			this.overlay.style.width = "100%";
-			this.overlay.style.position = "fixed";
-			this.overlay.style.zIndex = "5";
-			this.overlay.style.left = "0";
-			this.overlay.style.top = "0";
-			this.overlay.style.backgroundColor = "rgb(0,0,0)";
-			this.overlay.style.backgroundColor = "rgba(0,0,0, 0.9)";
-			this.overlay.style.overflowX = "hidden";
-			this.overlay.style.display = "flex";
-			this.overlay.style.justifyContent = "center";
-			this.overlay.style.alignItems = "center";
-			this.overlay.onclick = this.onExitClick;
-			this.overlay.onmousemove = this.overlayMouseMove;
-			document.body.appendChild(this.overlay);
-			this.loadMedium();
-		}
-		private resizeElement = (el: HTMLElement, w: number, h: number) => {
-			// TODO: replace this magic
-			const sb = 20;
-			const cw = window.innerWidth - sb;
-			const ch = window.innerHeight;
-			if (w <= cw && h <= ch) {
-				el.style.width = el.style.height = "auto";
-				return;
-			}
-			const nofitw = w > cw;
-			if (nofitw && h > ch) {
-				if (w > h) {
-					el.style.width = "auto";
-					el.style.height = ch + "px";
-				}
-				else {
-					el.style.width = cw + "px";
-					el.style.height = "auto";
-				}
-			}
-			else {
-				if (nofitw) {
-					el.style.width = cw + "px";
-					el.style.height = "auto";
-				}
-				else {
-					el.style.width = "auto";
-					el.style.height = ch + "px";
-				}
-			}
-		};
-		private onResize = (e: UIEvent) => {
-			if (!this.overlay) {
-				return;
-			}
-			const href = this.media[this.current].href;
-			if (href.indexOf(".webm") > 0) {
-				const vid = <HTMLVideoElement>this.overlay.querySelector("video");
-				this.resizeElement(vid, vid.videoWidth, vid.videoHeight);
-			}
-			else {
-				const img = <HTMLImageElement>this.overlay.querySelector("img");
-				this.resizeElement(img, img.naturalWidth, img.naturalHeight);
-			}
-		}
-	}
-	new MediaOverlayHandler(opts.MediaOverlay);
-}
-
-if (opts.References.Enabled) {
-	class ReferencesHandler {
-		private opts:ReferencesOptions;
-		private overlay: HTMLDivElement;
-		private reId: RegExp;
-		constructor(opts:ReferencesOptions) {
-			this.opts = opts;
-			this.reId = new RegExp("#(\\d+)$");
-			const refs = <NodeListOf<HTMLAnchorElement>>
-				document.querySelectorAll('blockquote a');
-			if (this.opts.HoverOverlayEnabled) {
-				for (let i = 0; i < refs.length; i++) {
-					refs[i].onmouseenter = this.onRefMouseEnter;
-					refs[i].onmouseleave = this.onRefMouseLeave;
-				}
-			}
-			if (this.opts.ReferenceLinksEnabled) {
-				for (let i = 0; i < refs.length; i++) {
-					// TODO: implement "add links to posts that reference this post next to header"
-				}
-			}
-		}
-		private onRefMouseEnter = (e: MouseEvent) => {
-			if (this.overlay) {
-				return;
-			}
-			const ref = <HTMLAnchorElement>e.target;
-			const m = this.reId.exec(ref.href);
-			if (!m) {
-				return;
-			}
-			const offset = 10;
-			const id = m[1];
-			{
-				const reply = <HTMLTableCellElement>
-					document.querySelector("#post-" + id);
-				if (reply) {
-					const br = document.body.getBoundingClientRect();
-					const eref = ref.getBoundingClientRect();
-					const ey = eref.top - br.top;
-					const ex = eref.left - br.left + eref.width;
-					const half = document.body.scrollTop + window.innerHeight / 2;
-					let y: number;
-					if (ey > half) {
-						const erep = reply.getBoundingClientRect();
-						y = ey - erep.height;
-					} else {
-						y = ey;
-					}
-					// TODO: if in view only highlight like the cool kids do
-					this.overlay = <HTMLDivElement>document.createElement("div");
-					this.overlay.style.background = "#aaaacc";
-					this.overlay.style.border = "1px rgb(89,89,89) solid"
-					this.overlay.style.boxShadow =
-						"2px 2px 0px 0px rgb(128,128,128)";
-					this.overlay.style.position = "absolute";
-					this.overlay.appendChild(reply.cloneNode(true));
-					this.overlay.style.top = y + "px";
-					this.overlay.style.left = (ex + offset) + "px";
-					document.body.appendChild(this.overlay);
+			private onRightArrowClick = (e: MouseEvent) => {
+				e.stopPropagation();
+				if (!this.overlay || this.isLoading()) {
 					return;
 				}
+				const ni = this.current + 1;
+				if (ni >= this.media.length) {
+					return;
+				}
+				this.current = ni;
+				this.loadMedium();
 			}
-			{
-				const thread = <HTMLDivElement>
-					document.querySelector("#thread_" + id);
-				if (thread) {
+			private onExitClick = (e: MouseEvent) => {
+				if (!this.overlay) {
+					return;
+				}
+				e.stopPropagation();
+				if (this.opts.ScrollToAfterExit) {
 					const br = document.body.getBoundingClientRect();
-					const eref = ref.getBoundingClientRect();
-					const ey = eref.top - br.top;
-					const ex = eref.left - br.left + eref.width;
-					// TODO: if in view only highlight like the cool kids do
-					this.overlay = <HTMLDivElement>document.createElement("div");
-					const phs = thread.querySelectorAll(".postheader");
-					if (phs.length == 0) {
-						return;
+					let post = this.media[this.current].parentElement;
+					// TODO: check this for threads
+					while (post && post.className != "postreply") {
+						post = post.parentElement;
 					}
-					this.overlay.appendChild(phs[0].cloneNode(true));
-					const files = thread.querySelectorAll(".file_thread");
-					for (let i = 0; i < files.length; i++) {
-						this.overlay.appendChild(files[i].cloneNode(true));
+					if (post) {
+						const er = post.getBoundingClientRect();
+						const py = er.top - br.top;
+						window.scrollTo(0, py);
 					}
-					this.overlay.appendChild(
-						thread.querySelector(".postbody").cloneNode(true));
-					this.overlay.style.background = "#aaaacc";
-					this.overlay.style.border = "1px rgb(89,89,89) solid"
-					this.overlay.style.boxShadow =
-						"2px 2px 0px 0px rgb(128,128,128)";
-					this.overlay.style.position = "absolute";
-					this.overlay.style.top = ey + "px";
-					this.overlay.style.left = (ex + offset) + "px";
-					document.body.appendChild(this.overlay);
-					const half = document.body.scrollTop + window.innerHeight / 2;
-					if (ey > half) {
-						const or = this.overlay.getBoundingClientRect();
-						this.overlay.style.top = (ey - or.height) + "px";
+				}
+				document.body.removeChild(this.overlay);
+				this.current = -1;
+				this.overlay = null;
+			}
+			private onMediumClick = (e: MouseEvent) => {
+				e.preventDefault();
+				if (this.overlay) {
+					return;
+				}
+				const target = <HTMLDivElement>e.target;
+				const a = <HTMLAnchorElement>target.parentElement;
+				const index = this.media.indexOf(a);
+				if (index < 0) {
+					return;
+				}
+				this.current = index;
+				this.overlay = document.createElement("div");
+				this.overlay.style.height = "100%";
+				this.overlay.style.width = "100%";
+				this.overlay.style.position = "fixed";
+				this.overlay.style.zIndex = "5";
+				this.overlay.style.left = "0";
+				this.overlay.style.top = "0";
+				this.overlay.style.backgroundColor = "rgb(0,0,0)";
+				this.overlay.style.backgroundColor = "rgba(0,0,0, 0.9)";
+				this.overlay.style.overflowX = "hidden";
+				this.overlay.style.display = "flex";
+				this.overlay.style.justifyContent = "center";
+				this.overlay.style.alignItems = "center";
+				this.overlay.onclick = this.onExitClick;
+				this.overlay.onmousemove = this.overlayMouseMove;
+				document.body.appendChild(this.overlay);
+				this.loadMedium();
+			}
+			private resizeElement = (el: HTMLElement, w: number, h: number) => {
+				// TODO: replace this magic
+				const sb = 20;
+				const cw = window.innerWidth - sb;
+				const ch = window.innerHeight;
+				if (w <= cw && h <= ch) {
+					el.style.width = el.style.height = "auto";
+					return;
+				}
+				const nofitw = w > cw;
+				if (nofitw && h > ch) {
+					if (w > h) {
+						el.style.width = "auto";
+						el.style.height = ch + "px";
 					}
+					else {
+						el.style.width = cw + "px";
+						el.style.height = "auto";
+					}
+				}
+				else {
+					if (nofitw) {
+						el.style.width = cw + "px";
+						el.style.height = "auto";
+					}
+					else {
+						el.style.width = "auto";
+						el.style.height = ch + "px";
+					}
+				}
+			};
+			private onResize = (e: UIEvent) => {
+				if (!this.overlay) {
+					return;
+				}
+				const href = this.media[this.current].href;
+				if (href.indexOf(".webm") > 0) {
+					const vid = <HTMLVideoElement>this.overlay.querySelector("video");
+					this.resizeElement(vid, vid.videoWidth, vid.videoHeight);
+				}
+				else {
+					const img = <HTMLImageElement>this.overlay.querySelector("img");
+					this.resizeElement(img, img.naturalWidth, img.naturalHeight);
 				}
 			}
 		}
-		private onRefMouseLeave = (e: MouseEvent) => {
-			if (!this.overlay) {
-				return;
+		new MediaOverlayHandler(opts.MediaOverlay);
+	}
+
+	if (opts.References.Enabled) {
+		class ReferencesHandler {
+			private opts: ReferencesOptions;
+			private overlay: HTMLDivElement;
+			private reId: RegExp;
+			constructor(opts: ReferencesOptions) {
+				this.opts = opts;
+				this.reId = new RegExp("#(\\d+)$");
+				const refs = <NodeListOf<HTMLAnchorElement>>
+					document.querySelectorAll('blockquote a');
+				if (this.opts.HoverOverlayEnabled) {
+					for (let i = 0; i < refs.length; i++) {
+						refs[i].onmouseenter = this.onRefMouseEnter;
+						refs[i].onmouseleave = this.onRefMouseLeave;
+					}
+				}
+				if (this.opts.ReferenceLinksEnabled) {
+					for (let i = 0; i < refs.length; i++) {
+						// TODO: implement "add links to posts that reference this post next to header"
+					}
+				}
 			}
-			document.body.removeChild(this.overlay);
-			this.overlay = null;
+			private onRefMouseEnter = (e: MouseEvent) => {
+				if (this.overlay) {
+					return;
+				}
+				const ref = <HTMLAnchorElement>e.target;
+				const m = this.reId.exec(ref.href);
+				if (!m) {
+					return;
+				}
+				const offset = 10;
+				const id = m[1];
+				{
+					const reply = <HTMLTableCellElement>
+						document.querySelector("#post-" + id);
+					if (reply) {
+						const br = document.body.getBoundingClientRect();
+						const eref = ref.getBoundingClientRect();
+						const ey = eref.top - br.top;
+						const ex = eref.left - br.left + eref.width;
+						const half = document.body.scrollTop + window.innerHeight / 2;
+						let y: number;
+						if (ey > half) {
+							const erep = reply.getBoundingClientRect();
+							y = ey - erep.height;
+						} else {
+							y = ey;
+						}
+						// TODO: if in view only highlight like the cool kids do
+						this.overlay = <HTMLDivElement>document.createElement("div");
+						this.overlay.style.background = "#aaaacc";
+						this.overlay.style.border = "1px rgb(89,89,89) solid"
+						this.overlay.style.boxShadow =
+							"2px 2px 0px 0px rgb(128,128,128)";
+						this.overlay.style.position = "absolute";
+						this.overlay.appendChild(reply.cloneNode(true));
+						this.overlay.style.top = y + "px";
+						this.overlay.style.left = (ex + offset) + "px";
+						document.body.appendChild(this.overlay);
+						return;
+					}
+				}
+				{
+					const thread = <HTMLDivElement>
+						document.querySelector("#thread_" + id);
+					if (thread) {
+						const br = document.body.getBoundingClientRect();
+						const eref = ref.getBoundingClientRect();
+						const ey = eref.top - br.top;
+						const ex = eref.left - br.left + eref.width;
+						// TODO: if in view only highlight like the cool kids do
+						this.overlay = <HTMLDivElement>document.createElement("div");
+						const phs = thread.querySelectorAll(".postheader");
+						if (phs.length == 0) {
+							return;
+						}
+						this.overlay.appendChild(phs[0].cloneNode(true));
+						const files = thread.querySelectorAll(".file_thread");
+						for (let i = 0; i < files.length; i++) {
+							this.overlay.appendChild(files[i].cloneNode(true));
+						}
+						this.overlay.appendChild(
+							thread.querySelector(".postbody").cloneNode(true));
+						this.overlay.style.background = "#aaaacc";
+						this.overlay.style.border = "1px rgb(89,89,89) solid"
+						this.overlay.style.boxShadow =
+							"2px 2px 0px 0px rgb(128,128,128)";
+						this.overlay.style.position = "absolute";
+						this.overlay.style.top = ey + "px";
+						this.overlay.style.left = (ex + offset) + "px";
+						document.body.appendChild(this.overlay);
+						const half = document.body.scrollTop + window.innerHeight / 2;
+						if (ey > half) {
+							const or = this.overlay.getBoundingClientRect();
+							this.overlay.style.top = (ey - or.height) + "px";
+						}
+					}
+				}
+			}
+			private onRefMouseLeave = (e: MouseEvent) => {
+				if (!this.overlay) {
+					return;
+				}
+				document.body.removeChild(this.overlay);
+				this.overlay = null;
+			}
+		}
+		// INFO: for now only *in* threads
+		//       doing it on the whole board requires loading other threads via ajax
+		if (location.href.indexOf("thread-") > 0) {
+			new ReferencesHandler(opts.References);
 		}
 	}
-	// INFO: for now only *in* threads
-	//       doing it on the whole board requires loading other threads via ajax
-	if (location.href.indexOf("thread-") > 0) {
-		new ReferencesHandler(opts.References);
-	}
-}
+});
