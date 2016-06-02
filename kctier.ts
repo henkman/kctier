@@ -426,12 +426,13 @@ chrome.storage.local.get(<Options>{
 				}
 				e.stopPropagation();
 				if (this.opts.ScrollToAfterExit) {
-					const br = document.body.getBoundingClientRect();
 					let post = this.media[this.current].parentElement;
-					while (post && post.className != "postreply") {
+					while (post && post.className != "postreply"
+						&& post.className != "thread") {
 						post = post.parentElement;
 					}
 					if (post) {
+						const br = document.body.getBoundingClientRect();
 						const er = post.getBoundingClientRect();
 						const py = er.top - br.top;
 						window.scrollTo(0, py);
@@ -483,12 +484,12 @@ chrome.storage.local.get(<Options>{
 				const nofitw = w > cw;
 				if (nofitw && h > ch) {
 					if (w > h) {
-						el.style.width = "auto";
-						el.style.height = ch + "px";
-					}
-					else {
 						el.style.width = cw + "px";
 						el.style.height = "auto";
+					}
+					else {
+						el.style.width = "auto";
+						el.style.height = ch + "px";
 					}
 				}
 				else {
