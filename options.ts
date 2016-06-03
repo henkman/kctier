@@ -1,4 +1,3 @@
-/// <reference path="chrome.d.ts"/>
 /// <reference path="common.ts"/>
 
 class OptionsHandler {
@@ -53,21 +52,7 @@ class OptionsHandler {
 		});
 	}
 	private restore = () => {
-		chrome.storage.local.get(<Options>{
-			MediaOverlay: {
-				Enabled: true,
-				WebmMuted: true,
-				WebmVolume: 1.0,
-				WebmLoop: true,
-				ScrollToAfterExit: true,
-				AllowedExtensions: ["gif", "jpg", "png", "webm"],
-			},
-			References: {
-				Enabled: true,
-				ReferenceLinksEnabled: true,
-				HoverOverlayEnabled: true,
-			},
-		}, (opts: Options) => {
+		chrome.storage.local.get(defaultOptions, (opts: Options) => {
 			(<HTMLInputElement>
 				document.getElementById('mediaoverlay_Enabled')
 			).checked = opts.MediaOverlay.Enabled;

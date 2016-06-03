@@ -23,4 +23,4 @@ options.js: options.ts
 	$(TSC) $< --outFile $@
 	
 clean:
-	rm kctier.min.js kctier.js options.min.js options.js
+	rm -f kctier.min.js kctier.js options.min.js options.js

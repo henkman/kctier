@@ -1,22 +1,6 @@
-/// <reference path="chrome.d.ts"/>
 /// <reference path="common.ts"/>
 
-chrome.storage.local.get(<Options>{
-	MediaOverlay: {
-		Enabled: true,
-		WebmMuted: true,
-		WebmVolume: 1.0,
-		WebmLoop: true,
-		ScrollToAfterExit: true,
-		AllowedExtensions: ["gif", "jpg", "png", "webm"],
-	},
-	References: {
-		Enabled: true,
-		ReferenceLinksEnabled: true,
-		HoverOverlayEnabled: true,
-	},
-}, function (opts: Options) {
-
+chrome.storage.local.get(defaultOptions, function (opts: Options) {
 	if (opts.References.Enabled) {
 		class ReferencesHandler {
 			private opts: ReferencesOptions;
@@ -38,18 +22,18 @@ chrome.storage.local.get(<Options>{
 					}
 					if (this.opts.ReferenceLinksEnabled) {
 						const ref_id = m[1];
-						let post_id:string;
+						let post_id: string;
 						{
 							let post = refs[i].parentElement;
 							while (post && post.className != "postreply") {
 								post = post.parentElement;
 							}
-							if(!post) {
+							if (!post) {
 								continue;
 							}
 							const ql = <HTMLAnchorElement>
-							post.querySelector(".quotelink");
-							if(!ql) {
+								post.querySelector(".quotelink");
+							if (!ql) {
 								continue;
 							}
 							const m = this.reId.exec(ql.href);
@@ -61,43 +45,43 @@ chrome.storage.local.get(<Options>{
 						{
 							const reply = <HTMLTableCellElement>
 								document.querySelector("#post-" + ref_id);
-							if(reply) {
+							if (reply) {
 								const header = <HTMLDivElement>
 									reply.querySelector(".postheader");
-								if(!header) {
+								if (!header) {
 									continue;
 								}
-								const a = <HTMLAnchorElement> 
+								const a = <HTMLAnchorElement>
 									document.createElement("a");
 								a.style.paddingRight = "4px";
-								a.href = "#"+post_id;
+								a.href = "#" + post_id;
 								a.setAttribute("onclick",
-									"highlightPost('"+post_id+"')");
-								a.text = ">>"+post_id;
+									"highlightPost('" + post_id + "')");
+								a.text = ">>" + post_id;
 								if (this.opts.HoverOverlayEnabled) {
 									a.onmouseenter = this.onRefMouseEnter;
 									a.onmouseleave = this.onRefMouseLeave;
 								}
 								header.appendChild(a);
 								continue;
-							} 
+							}
 						}
 						{
 							const thread = <HTMLDivElement>
 								document.querySelector("#thread_" + ref_id);
-							if(thread) {
+							if (thread) {
 								const header = <HTMLDivElement>
 									thread.querySelector(".postheader");
-								if(!header) {
+								if (!header) {
 									continue;
 								}
-								const a = <HTMLAnchorElement> 
+								const a = <HTMLAnchorElement>
 									document.createElement("a");
 								a.style.paddingRight = "4px";
-								a.href = "#"+post_id;
+								a.href = "#" + post_id;
 								a.setAttribute("onclick",
-									"highlightPost('"+post_id+"')");
-								a.text = ">>"+post_id;
+									"highlightPost('" + post_id + "')");
+								a.text = ">>" + post_id;
 								if (this.opts.HoverOverlayEnabled) {
 									a.onmouseenter = this.onRefMouseEnter;
 									a.onmouseleave = this.onRefMouseLeave;
@@ -207,7 +191,7 @@ chrome.storage.local.get(<Options>{
 			new ReferencesHandler(opts.References);
 		}
 	}
-	
+
 	if (opts.MediaOverlay.Enabled) {
 		class MediaOverlayHandler {
 			private opts: MediaOverlayOptions;
