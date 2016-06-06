@@ -212,14 +212,14 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 			private loadicon: HTMLImageElement;
 			constructor(opts: MediaOverlayOptions) {
 				this.opts = opts;
-				const media: NodeListOf<HTMLAnchorElement> =
+				const links: NodeListOf<HTMLAnchorElement> =
 					<NodeListOf<HTMLAnchorElement>>document.querySelectorAll(
 						'.file_thread a[target="_blank"], .file_reply a[target="_blank"]'
 					);
-				this.media = new Array<HTMLAnchorElement>(media.length);
+				const media = new Array<HTMLAnchorElement>(links.length);
 				let o = 0;
-				for (let i = 0; i < media.length; i++) {
-					const href = media[i].href;
+				for (let i = 0; i < links.length; i++) {
+					const href = links[i].href;
 					if (!href) {
 						continue;
 					}
@@ -231,11 +231,11 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 					if (this.opts.AllowedExtensions.indexOf(ext) < 0) {
 						continue;
 					}
-					media[o].onclick = this.onMediumClick;
-					this.media[o] = media[i];
+					links[i].onclick = this.onMediumClick;
+					media[o] = links[i];
 					o++;
 				}
-				this.media.slice(0, o);
+				this.media = media.slice(0, o);
 				window.onresize = this.onResize;
 				window.onkeyup = this.onKeyup;
 				this.loadicon = document.createElement("img");
