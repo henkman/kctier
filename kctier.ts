@@ -67,6 +67,7 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 							}
 						}
 						{
+							console.log(ref_id);
 							const thread = <HTMLDivElement>
 								document.querySelector("#thread_" + ref_id);
 							if (thread) {
@@ -111,21 +112,16 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 						const eref = ref.getBoundingClientRect();
 						const erep = reply.getBoundingClientRect();
 						const ey = eref.top - br.top;
-						const ex = eref.left - br.left;
 						const hy = document.body.scrollTop + window.innerHeight / 2;
-						const hx = window.innerWidth / 2;
 						let y: number;
 						if (ey > hy) {
 							y = ey - erep.height;
 						} else {
-							y = ey + eref.height;
+							y = ey + eref.height * 2;
 						}
-						let x: number;
-						if (ex > hx) {
-							x = ex - erep.width - offset;
-						} else {
-							x = ex + eref.width + offset;
-						}
+						const x = Math.min(
+							window.innerWidth - (erep.left + erep.width),
+							eref.left);
 						// TODO: if in view only highlight like the cool kids do
 						this.overlay = <HTMLDivElement>document.createElement("div");
 						this.overlay.style.background = "#aaaacc";
@@ -136,6 +132,8 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 						this.overlay.appendChild(reply.cloneNode(true));
 						this.overlay.style.top = y + "px";
 						this.overlay.style.left = x + "px";
+						this.overlay.style.width = erep.width + "px";
+						this.overlay.style.height = erep.height + "px";
 						document.body.appendChild(this.overlay);
 						return;
 					}
@@ -144,10 +142,6 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 					const thread = <HTMLDivElement>
 						document.querySelector("#thread_" + id);
 					if (thread) {
-						const br = document.body.getBoundingClientRect();
-						const eref = ref.getBoundingClientRect();
-						const ey = eref.top - br.top;
-						const ex = eref.left - br.left + eref.width;
 						// TODO: if in view only highlight like the cool kids do
 						this.overlay = <HTMLDivElement>document.createElement("div");
 						const phs = thread.querySelectorAll(".postheader");
@@ -166,14 +160,30 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 						this.overlay.style.boxShadow =
 							"2px 2px 0px 0px rgb(128,128,128)";
 						this.overlay.style.position = "absolute";
-						this.overlay.style.top = ey + "px";
-						this.overlay.style.left = (ex + offset) + "px";
+						const left = 16;
+						this.overlay.style.left = left + "px";
+						this.overlay.style.maxWidth = (window.innerWidth - left)
+							+ "px";
 						document.body.appendChild(this.overlay);
-						const half = document.body.scrollTop + window.innerHeight / 2;
-						if (ey > half) {
-							const or = this.overlay.getBoundingClientRect();
-							this.overlay.style.top = (ey - or.height) + "px";
+						const br = document.body.getBoundingClientRect();
+						const erep = this.overlay.getBoundingClientRect();
+						const eref = ref.getBoundingClientRect();
+						const ey = eref.top - br.top;
+						const hy = document.body.scrollTop + window.innerHeight / 2;
+						let y: number;
+						if (ey > hy) {
+							y = ey - erep.height;
+						} else {
+							y = ey + eref.height * 2;
 						}
+						const x = Math.min(
+							Math.max(
+								window.innerWidth - (left + erep.width),
+								0
+							),
+							eref.left);
+						this.overlay.style.top = y + "px";
+						this.overlay.style.left = x + "px";
 					}
 				}
 			}
@@ -188,7 +198,9 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 		// INFO: for now only *in* threads
 		//       doing it on the whole board requires loading other threads via ajax
 		if (location.href.indexOf("thread-") > 0) {
-			new ReferencesHandler(opts.References);
+			window.addEventListener("load", () => {
+				new ReferencesHandler(opts.References);
+			});
 		}
 	}
 
@@ -502,6 +514,8 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 				}
 			}
 		}
-		new MediaOverlayHandler(opts.MediaOverlay);
+		window.addEventListener("load", () => {
+			new MediaOverlayHandler(opts.MediaOverlay);
+		});
 	}
 });
