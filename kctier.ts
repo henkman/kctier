@@ -67,7 +67,6 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 							}
 						}
 						{
-							console.log(ref_id);
 							const thread = <HTMLDivElement>
 								document.querySelector("#thread_" + ref_id);
 							if (thread) {
