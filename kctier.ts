@@ -51,10 +51,15 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 								if (!header) {
 									continue;
 								}
+								const post_ref = "#" + post_id;
+								if(header.querySelector(
+									'[href="'+post_ref+'"]') != null) {
+									continue;
+								}
 								const a = <HTMLAnchorElement>
 									document.createElement("a");
 								a.style.paddingRight = "4px";
-								a.href = "#" + post_id;
+								a.href = post_ref;
 								a.setAttribute("onclick",
 									"highlightPost('" + post_id + "')");
 								a.text = ">>" + post_id;
@@ -75,10 +80,15 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 								if (!header) {
 									continue;
 								}
+								const post_ref = "#" + post_id;
+								if(header.querySelector(
+									'[href="'+post_ref+'"]') != null) {
+									continue;
+								}
 								const a = <HTMLAnchorElement>
 									document.createElement("a");
 								a.style.paddingRight = "4px";
-								a.href = "#" + post_id;
+								a.href = post_ref;
 								a.setAttribute("onclick",
 									"highlightPost('" + post_id + "')");
 								a.text = ">>" + post_id;
