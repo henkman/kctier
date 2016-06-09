@@ -26,7 +26,7 @@ const defaultOptions: Options = {
 		WebmVolume: 1.0,
 		WebmLoop: true,
 		ScrollToAfterExit: true,
-		AllowedExtensions: ["gif", "jpg", "png", "webm"],
+		AllowedExtensions: ["gif", "jpg", "jpeg", "png", "webm"],
 	},
 	References: {
 		Enabled: true,
