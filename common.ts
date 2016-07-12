@@ -14,9 +14,15 @@ interface ReferencesOptions {
 	HoverOverlayEnabled: boolean
 }
 
+interface ButtonOptions {
+	Enabled: boolean
+	Board: string
+}
+
 interface Options {
 	MediaOverlay: MediaOverlayOptions
 	References: ReferencesOptions
+	Button: ButtonOptions
 }
 
 const defaultOptions: Options = {
@@ -32,6 +38,10 @@ const defaultOptions: Options = {
 		Enabled: true,
 		ReferenceLinksEnabled: true,
 		HoverOverlayEnabled: true,
+	},
+	Button: {
+		Enabled: true,
+		Board: "int",
 	}
 };
 
@@ -39,5 +49,22 @@ declare namespace chrome.storage {
 	const local: {
 		set(items: Options, callback?: () => void): void;
 		get(keys: Options, callback: (items: Options) => void): void;
+	};
+}
+
+// https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/chrome/chrome.d.ts#L5838
+declare namespace chrome.tabs {
+	interface Tab {
+
+	}
+	interface CreateProperties {
+        url?: string;
+    }
+	export function create(createProperties: CreateProperties, callback?: (tab: Tab) => void): void;
+}
+
+declare namespace chrome.browserAction {
+	const onClicked: {
+		addListener(callback?: (tab: chrome.tabs.Tab) => void): void;
 	};
 }

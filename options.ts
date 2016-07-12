@@ -43,6 +43,14 @@ class OptionsHandler {
 					document.getElementById('references_HoverOverlayEnabled')
 				).checked,
 			},
+			Button: {
+				Enabled: (<HTMLInputElement>
+					document.getElementById('button_Enabled')
+				).checked,
+				Board: (<HTMLSelectElement>
+					document.getElementById('button_Board')
+				).value,
+			}
 		}, () => {
 			const status = <HTMLDivElement>document.getElementById('status');
 			status.textContent = 'Options saved.';
@@ -81,6 +89,13 @@ class OptionsHandler {
 			(<HTMLInputElement>
 				document.getElementById('references_HoverOverlayEnabled')
 			).checked = opts.References.HoverOverlayEnabled;
+
+			(<HTMLInputElement>
+				document.getElementById('button_Enabled')
+			).checked = opts.Button.Enabled;
+			(<HTMLSelectElement>
+					document.getElementById('button_Board')
+			).value = opts.Button.Board;
 		});
 	}
 }
