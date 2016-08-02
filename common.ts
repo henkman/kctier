@@ -14,6 +14,12 @@ interface ReferencesOptions {
 	HoverOverlayEnabled: boolean
 }
 
+interface ClickableLinksOptions {
+	Enabled: boolean
+	SameWindow: boolean 
+	Regex: string
+}
+
 interface ButtonOptions {
 	Enabled: boolean
 	Board: string
@@ -22,6 +28,7 @@ interface ButtonOptions {
 interface Options {
 	MediaOverlay: MediaOverlayOptions
 	References: ReferencesOptions
+	ClickableLinks: ClickableLinksOptions
 	Button: ButtonOptions
 }
 
@@ -38,6 +45,11 @@ const defaultOptions: Options = {
 		Enabled: true,
 		ReferenceLinksEnabled: true,
 		HoverOverlayEnabled: true,
+	},
+	ClickableLinks: {
+		Enabled: true,
+		SameWindow: true,
+		Regex: "https?://[^< ]+",
 	},
 	Button: {
 		Enabled: true,

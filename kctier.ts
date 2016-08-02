@@ -52,8 +52,8 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 									continue;
 								}
 								const post_ref = "#" + post_id;
-								if(header.querySelector(
-									'[href="'+post_ref+'"]') != null) {
+								if (header.querySelector(
+									'[href="' + post_ref + '"]') != null) {
 									continue;
 								}
 								const a = <HTMLAnchorElement>
@@ -81,8 +81,8 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 									continue;
 								}
 								const post_ref = "#" + post_id;
-								if(header.querySelector(
-									'[href="'+post_ref+'"]') != null) {
+								if (header.querySelector(
+									'[href="' + post_ref + '"]') != null) {
 									continue;
 								}
 								const a = <HTMLAnchorElement>
@@ -132,7 +132,8 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 							window.innerWidth - (erep.left + erep.width),
 							eref.left);
 						// TODO: if in view only highlight like the cool kids do
-						this.overlay = <HTMLDivElement>document.createElement("div");
+						this.overlay = <HTMLDivElement>
+							document.createElement("div");
 						this.overlay.style.background = "#aaaacc";
 						this.overlay.style.border = "1px rgb(89,89,89) solid"
 						this.overlay.style.boxShadow =
@@ -152,7 +153,8 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 						document.querySelector("#thread_" + id);
 					if (thread) {
 						// TODO: if in view only highlight like the cool kids do
-						this.overlay = <HTMLDivElement>document.createElement("div");
+						this.overlay = <HTMLDivElement>
+							document.createElement("div");
 						const phs = thread.querySelectorAll(".postheader");
 						if (phs.length == 0) {
 							return;
@@ -223,7 +225,8 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 			constructor(opts: MediaOverlayOptions) {
 				this.opts = opts;
 				const links: NodeListOf<HTMLAnchorElement> =
-					<NodeListOf<HTMLAnchorElement>>document.querySelectorAll(
+					<NodeListOf<HTMLAnchorElement>>
+					document.querySelectorAll(
 						'.file_thread a[target="_blank"], .file_reply a[target="_blank"]'
 					);
 				const media = new Array<HTMLAnchorElement>(links.length);
@@ -248,23 +251,30 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 				this.media = media.slice(0, o);
 				window.onresize = this.onResize;
 				window.onkeyup = this.onKeyup;
-				this.loadicon = document.createElement("img");
-				this.loadicon.src = "data:image/gif;base64,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";
+			}
+			private getLoadIcon = (): HTMLImageElement => {
+				if (!this.loadicon) {
+					this.loadicon = document.createElement("img");
+					this.loadicon.src = "data:image/gif;base64,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";
+				}
+				return this.loadicon;
 			}
 			private loadMedium = () => {
 				const medium = this.overlay.querySelector("img, video");
 				if (medium) {
 					this.overlay.removeChild(medium);
 				}
-				this.overlay.appendChild(this.loadicon);
+				this.overlay.appendChild(this.getLoadIcon());
 				const href = this.media[this.current].href;
 				if (href.indexOf(".webm") > 0) {
-					const vid = <HTMLVideoElement>document.createElement("video");
+					const vid = <HTMLVideoElement>
+						document.createElement("video");
 					vid.style.zIndex = "10";
 					vid.style.width = vid.style.height = "0";
 					vid.controls = true;
 					vid.loop = this.opts.WebmLoop;
-					const source = <HTMLSourceElement>document.createElement("source");
+					const source = <HTMLSourceElement>
+						document.createElement("source");
 					source.type = "video/webm";
 					source.src = href;
 					vid.appendChild(source);
@@ -277,7 +287,9 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 							return;
 						}
 						this.overlay.removeChild(this.loadicon);
-						this.resizeElement(vid, vid.videoWidth, vid.videoHeight);
+						this.resizeElement(vid,
+							vid.videoWidth,
+							vid.videoHeight);
 						vid.play();
 					};
 				} else {
@@ -290,7 +302,9 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 							return;
 						}
 						this.overlay.removeChild(this.loadicon);
-						this.resizeElement(img, img.naturalWidth, img.naturalHeight);
+						this.resizeElement(img,
+							img.naturalWidth,
+							img.naturalHeight);
 					};
 					img.src = href;
 				}
@@ -330,7 +344,8 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 					const oldarrow = this.overlay.querySelector(".arrow_left");
 					if (this.current > 0) {
 						if (!oldarrow) {
-							const arrow = <HTMLDivElement>document.createElement("div");
+							const arrow = <HTMLDivElement>
+								document.createElement("div");
 							arrow.style.position = "absolute";
 							arrow.style.zIndex = "15";
 							arrow.style.left = "10px";
@@ -354,7 +369,8 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 					const oldarrow = this.overlay.querySelector(".arrow_right");
 					if (this.current < (this.media.length - 1)) {
 						if (!oldarrow) {
-							const arrow = <HTMLDivElement>document.createElement("div");
+							const arrow = <HTMLDivElement>
+								document.createElement("div");
 							arrow.style.position = "absolute";
 							arrow.style.zIndex = "15";
 							arrow.style.right = "10px";
@@ -514,17 +530,58 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 				}
 				const href = this.media[this.current].href;
 				if (href.indexOf(".webm") > 0) {
-					const vid = <HTMLVideoElement>this.overlay.querySelector("video");
+					const vid = <HTMLVideoElement>
+						this.overlay.querySelector("video");
 					this.resizeElement(vid, vid.videoWidth, vid.videoHeight);
 				}
 				else {
-					const img = <HTMLImageElement>this.overlay.querySelector("img");
+					const img = <HTMLImageElement>
+						this.overlay.querySelector("img");
 					this.resizeElement(img, img.naturalWidth, img.naturalHeight);
 				}
 			}
 		}
 		window.addEventListener("load", () => {
 			new MediaOverlayHandler(opts.MediaOverlay);
+		});
+	}
+
+	if (opts.ClickableLinks.Enabled) {
+		class ClickableLinks {
+			constructor(opts: ClickableLinksOptions) {
+				const re = new RegExp(opts.Regex, "g");
+				const ps = <NodeListOf<HTMLParagraphElement>>
+					document.querySelectorAll(".thread p");
+				for (let i = 0; i < ps.length; i++) {
+					const p = ps[i];
+					const t = p.innerHTML;
+					let mod = false;
+					let r = t;
+					let o = 0;
+					let m = re.exec(t);
+					while (m) {
+						mod = true;
+						const s = r.substring(0, o + m.index);
+						const e = r.substring(o + m.index + m[0].length);
+						let a: string;
+						if (opts.SameWindow) {
+							a = "<a href=\"" + m[0] + "\">" + m[0] + "</a>";
+						} else {
+							a = "<a target=\"_blank\" href=\"" + m[0] + "\">"
+								+ m[0] + "</a>";
+						}
+						r = s + a + e;
+						o += a.length - m[0].length;
+						m = re.exec(t);
+					}
+					if (mod) {
+						p.innerHTML = r;
+					}
+				}
+			}
+		}
+		window.addEventListener("load", () => {
+			new ClickableLinks(opts.ClickableLinks);
 		});
 	}
 });

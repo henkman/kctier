@@ -43,6 +43,17 @@ class OptionsHandler {
 					document.getElementById('references_HoverOverlayEnabled')
 				).checked,
 			},
+			ClickableLinks: {
+				Enabled: (<HTMLInputElement>
+					document.getElementById('clickablelinks_Enabled')
+				).checked,
+				SameWindow: (<HTMLInputElement>
+					document.getElementById('clickablelinks_SameWindow')
+				).checked,
+				Regex: (<HTMLInputElement>
+					document.getElementById('clickablelinks_Regex')
+				).value,
+			},
 			Button: {
 				Enabled: (<HTMLInputElement>
 					document.getElementById('button_Enabled')
@@ -89,6 +100,16 @@ class OptionsHandler {
 			(<HTMLInputElement>
 				document.getElementById('references_HoverOverlayEnabled')
 			).checked = opts.References.HoverOverlayEnabled;
+
+			(<HTMLInputElement>
+				document.getElementById('clickablelinks_Enabled')
+			).checked = opts.ClickableLinks.Enabled;
+			(<HTMLInputElement>
+				document.getElementById('clickablelinks_SameWindow')
+			).checked = opts.ClickableLinks.SameWindow;
+			(<HTMLSelectElement>
+					document.getElementById('clickablelinks_Regex')
+			).value = opts.ClickableLinks.Regex;
 
 			(<HTMLInputElement>
 				document.getElementById('button_Enabled')
