@@ -1,6 +1,45 @@
 /// <reference path="common.ts"/>
 
 chrome.storage.local.get(defaultOptions, function (opts: Options) {
+	if (opts.ClickableLinks.Enabled) {
+		class ClickableLinks {
+			constructor(opts: ClickableLinksOptions) {
+				const re = new RegExp(opts.Regex, "g");
+				const ps = <NodeListOf<HTMLParagraphElement>>
+					document.querySelectorAll(".thread p");
+				for (let i = 0; i < ps.length; i++) {
+					const p = ps[i];
+					const t = p.innerHTML;
+					let mod = false;
+					let r = t;
+					let o = 0;
+					let m = re.exec(t);
+					while (m) {
+						mod = true;
+						const s = r.substring(0, o + m.index);
+						const e = r.substring(o + m.index + m[0].length);
+						let a: string;
+						if (opts.SameWindow) {
+							a = "<a href=\"" + m[0] + "\">" + m[0] + "</a>";
+						} else {
+							a = "<a target=\"_blank\" href=\"" + m[0] + "\">"
+								+ m[0] + "</a>";
+						}
+						r = s + a + e;
+						o += a.length - m[0].length;
+						m = re.exec(t);
+					}
+					if (mod) {
+						p.innerHTML = r;
+					}
+				}
+			}
+		}
+		window.addEventListener("load", () => {
+			new ClickableLinks(opts.ClickableLinks);
+		});
+	}
+
 	if (opts.References.Enabled) {
 		class ReferencesHandler {
 			private opts: ReferencesOptions;
@@ -543,45 +582,6 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 		}
 		window.addEventListener("load", () => {
 			new MediaOverlayHandler(opts.MediaOverlay);
-		});
-	}
-
-	if (opts.ClickableLinks.Enabled) {
-		class ClickableLinks {
-			constructor(opts: ClickableLinksOptions) {
-				const re = new RegExp(opts.Regex, "g");
-				const ps = <NodeListOf<HTMLParagraphElement>>
-					document.querySelectorAll(".thread p");
-				for (let i = 0; i < ps.length; i++) {
-					const p = ps[i];
-					const t = p.innerHTML;
-					let mod = false;
-					let r = t;
-					let o = 0;
-					let m = re.exec(t);
-					while (m) {
-						mod = true;
-						const s = r.substring(0, o + m.index);
-						const e = r.substring(o + m.index + m[0].length);
-						let a: string;
-						if (opts.SameWindow) {
-							a = "<a href=\"" + m[0] + "\">" + m[0] + "</a>";
-						} else {
-							a = "<a target=\"_blank\" href=\"" + m[0] + "\">"
-								+ m[0] + "</a>";
-						}
-						r = s + a + e;
-						o += a.length - m[0].length;
-						m = re.exec(t);
-					}
-					if (mod) {
-						p.innerHTML = r;
-					}
-				}
-			}
-		}
-		window.addEventListener("load", () => {
-			new ClickableLinks(opts.ClickableLinks);
 		});
 	}
 });
