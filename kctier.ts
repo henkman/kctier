@@ -309,7 +309,7 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 					const vid = <HTMLVideoElement>
 						document.createElement("video");
 					vid.style.zIndex = "10";
-					vid.style.width = vid.style.height = "0";
+					vid.style.width = vid.style.height = "400px";
 					vid.controls = true;
 					vid.loop = this.opts.WebmLoop;
 					const source = <HTMLSourceElement>
@@ -334,7 +334,7 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 				} else {
 					const img = <HTMLImageElement>document.createElement("img");
 					img.style.zIndex = "5";
-					img.style.width = img.style.height = "0";
+					img.style.width = img.style.height = "400px";
 					this.overlay.appendChild(img);
 					img.onload = () => {
 						if (!this.overlay) {
