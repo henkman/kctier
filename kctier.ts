@@ -35,7 +35,7 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 				}
 			}
 		}
-		window.addEventListener("load", () => {
+		window.addEventListener("DOMContentLoaded", () => {
 			new ClickableLinks(opts.ClickableLinks);
 		});
 	}
@@ -248,7 +248,7 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 		// INFO: for now only *in* threads
 		//       doing it on the whole board requires loading other threads via ajax
 		if (location.href.indexOf("thread-") > 0) {
-			window.addEventListener("load", () => {
+			window.addEventListener("DOMContentLoaded", () => {
 				new ReferencesHandler(opts.References);
 			});
 		}
@@ -580,7 +580,7 @@ chrome.storage.local.get(defaultOptions, function (opts: Options) {
 				}
 			}
 		}
-		window.addEventListener("load", () => {
+		window.addEventListener("DOMContentLoaded", () => {
 			new MediaOverlayHandler(opts.MediaOverlay);
 		});
 	}
